@@ -47,16 +47,40 @@
     constructor(gameFieldElement) {
       const canvasElement = document.getElementById('gameField');
       const snake = this.snake;
-      const snakeBornXY = this.randomPlaceSnake();
+      snake.head = this.getRandomPlaceSnake();
+      snake.move = this.getRandomSnakeMove();
       this.painter.fillRect(
-        snakeBornXY.x,
-        snakeBornXY.y,
+        snake.head.x,
+        snake.head.y,
         snake.segment,
         snake.segment
       );
 
       document.addEventListener(this.onkeydown);
+
+      setTimeout(this.timer);
     }
+
+    getRandomSnakeMove() {
+      const values = [-1, 1];
+      const coords = ['x', 'y'];
+      const randomIndex = Math.floor(Math.random() * 2);
+      return {
+        ...{ x: 0, y: 0 },
+        [coords[randomIndex]]: values[randomIndex]
+      };
+    }
+
+    timer = () => {
+      this.painter.fillRect(
+        snake.head.x,
+        snake.head.y,
+        snake.segment,
+        snake.segment
+      );
+
+      setTimeout(timer, 1000 / 15);
+    };
 
     onKeydown = ({ keyCode }) => {
       switch (keyCode) {
@@ -75,7 +99,7 @@
       }
     };
 
-    randomPlaceSnake() {
+    getRandomPlaceSnake() {
       return {
         x: Math.floor(Math.random() * gameField.width),
         y: Math.floor(Math.random() * gameField.height)
