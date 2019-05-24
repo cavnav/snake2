@@ -22,6 +22,12 @@
     height: 400
   };
 
+  class Food {
+    coords = {};
+    width = 10;
+    height = 10;
+  }
+
   class Snake {
     head = {
       x: 100,
@@ -29,6 +35,8 @@
     };
     length = 3;
     segment = 10; // 10x10
+    move = {};
+    body = [];
   }
 
   class Painter {
@@ -42,19 +50,14 @@
 
   class Game {
     snake = new Snake();
+    food = new Food();
     painter = new Painter('gameField').canvasContext;
 
     constructor(gameFieldElement) {
       const canvasElement = document.getElementById('gameField');
       const snake = this.snake;
-      snake.head = this.getRandomPlaceSnake();
+      snake.head = this.getRandomPlace();
       snake.move = this.getRandomSnakeMove();
-      this.painter.fillRect(
-        snake.head.x,
-        snake.head.y,
-        snake.segment,
-        snake.segment
-      );
 
       document.addEventListener(this.onkeydown);
 
@@ -71,16 +74,50 @@
       };
     }
 
+    snakeMove() {
+      const { head, move, segment, body, length } = this.snake;
+      const { x: foodX, y: foodY } = this.food;
+      const painter = this.painter;
+
+      head.x += move.x;
+      head.y += move.y;
+
+      body.push(head);
+
+      painter.fillStyle = 'lime';
+      if (body.length > length) {
+        body.shift().map(part => {
+          painter.fillRect(part.x, part.y, segment - 2, segment - 2);
+        });
+      }
+
+      if (head.x === foodX && head.y === foodY) {
+        this.food.coords = this.getRandomPlace();
+      }
+    }
+
     timer = () => {
-      this.painter.fillRect(
-        snake.head.x,
-        snake.head.y,
-        snake.segment,
-        snake.segment
-      );
+      const painter = this.painter;
+      const { width, height } = gameField;
+
+      painter.fillStyle = 'black';
+      painter.fillRect(0, 0, width, height);
+
+      this.paintFood();
+      this.snakeMove();
 
       setTimeout(timer, 1000 / 15);
     };
+
+    paintFood() {
+      const {
+        coords: { x, y },
+        width,
+        height
+      } = this.food;
+      painter.fillStyle = 'red';
+      painter.fillRect(x, y, width, height);
+    }
 
     onKeydown = ({ keyCode }) => {
       switch (keyCode) {
@@ -99,7 +136,7 @@
       }
     };
 
-    getRandomPlaceSnake() {
+    getRandomPlace() {
       return {
         x: Math.floor(Math.random() * gameField.width),
         y: Math.floor(Math.random() * gameField.height)
