@@ -59,7 +59,7 @@
       snake.head = this.getRandomPlace();
       snake.move = this.getRandomSnakeMove();
 
-      document.addEventListener(this.onkeydown);
+      document.addEventListener('onkeydown', this.onkeydown);
 
       setTimeout(this.timer);
     }
@@ -86,8 +86,13 @@
 
       painter.fillStyle = 'lime';
       if (body.length > length) {
-        body.shift().map(part => {
-          painter.fillRect(part.x, part.y, segment - 2, segment - 2);
+        body.slice(1).map(part => {
+          painter.fillRect(
+            part.x * segment,
+            part.y * segment,
+            segment - 2,
+            segment - 2
+          );
         });
       }
 
@@ -106,7 +111,7 @@
       this.paintFood();
       this.snakeMove();
 
-      setTimeout(timer, 1000 / 15);
+      setTimeout(this.timer, 1000 / 15);
     };
 
     paintFood() {
@@ -115,8 +120,8 @@
         width,
         height
       } = this.food;
-      painter.fillStyle = 'red';
-      painter.fillRect(x, y, width, height);
+      this.painter.fillStyle = 'red';
+      this.painter.fillRect(x, y, width, height);
     }
 
     onKeydown = ({ keyCode }) => {
