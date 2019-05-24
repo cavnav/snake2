@@ -49,8 +49,14 @@
 			const snake = this.snake;
 			const snakeBornXY = this.randomPlaceSnake();
 			this.painter.fillRect(snakeBornXY.x, snakeBornXY.y, snake.segment, snake.segment);
+
+			document.addEventListener(this.onkeydown);
 		}
 		
+		onKeydown = ({keyCode}) => {
+
+		}
+
 		randomPlaceSnake() {
 			return {
 				x: Math.floor(Math.random() * gameField.width),
