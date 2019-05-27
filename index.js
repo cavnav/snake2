@@ -195,5 +195,7 @@
     }
   }
 
-  new Game();
+  window.onload = () => {
+    new Game();
+  };
 })();
