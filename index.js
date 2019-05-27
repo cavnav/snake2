@@ -23,7 +23,8 @@
 
   class Snake {
     headXY = {};
-    length = 3;
+    length;
+    startLength = 3;
     move = {};
     body = [];
     isGrowUp = false;
@@ -34,6 +35,7 @@
 
       this.headXY = this.props.getRandomPlace();
       this.move = this.getRandomMove();
+      this.length = this.props.length || this.startLength;
     }
 
     getRandomMove() {
@@ -62,14 +64,11 @@
       this.headXY.y += this.move.y;
 
       this.headXY = this.ifWentAbroadScreen();
+      this.length = this.ifCollisionYourself(this.headXY);
 
       this.body.push({ ...this.headXY });
-
+      this.body = this.body.slice(-this.length);
       painter.fillStyle = 'lime';
-      if (this.body.length > this.length) {
-        this.body = this.body.slice(1);
-      }
-
       this.body.map(part => {
         fillRect(part.x * segment, part.y * segment, segmentGap, segmentGap);
       });
@@ -79,6 +78,12 @@
         this.length++;
         this.isGrowUp = true;
       }
+    }
+
+    ifCollisionYourself({ x, y }) {
+      return this.body.find(part => part.x === x && part.y === y)
+        ? this.startLength
+        : this.length;
     }
 
     ifWentAbroadScreen() {
