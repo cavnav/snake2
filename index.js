@@ -22,13 +22,15 @@
   }
 
   class Snake {
+    // const.
+    startLength = 3;
+    props;
+
     headXY = {};
     length;
-    startLength = 3;
     move = {};
     body = [];
     isGrowUp = false;
-    props;
 
     constructor(props) {
       this.props = props;
@@ -36,6 +38,8 @@
       this.headXY = this.props.getRandomPlace();
       this.move = this.getRandomMove();
       this.length = this.props.length || this.startLength;
+
+      document.addEventListener('keydown', this.moveTo);
     }
 
     getRandomMove() {
@@ -49,35 +53,56 @@
       };
     }
 
-    paint() {
+    moveTo = ({ keyCode }) => {
+      switch (keyCode) {
+        case 37:
+          this.move = { x: -1, y: 0 };
+          break;
+        case 38:
+          this.move = { x: 0, y: -1 };
+          break;
+        case 39:
+          this.move = { x: 1, y: 0 };
+          break;
+        case 40:
+          this.move = { x: 0, y: 1 };
+          break;
+      }
+    };
+
+    paintCore(body) {
       const {
-        food: {
-          coords: { x: foodX, y: foodY }
-        },
         painter,
         field: { segment, segmentGap }
       } = this.props;
 
       const fillRect = painter.fillRect.bind(painter);
 
+      painter.fillStyle = 'lime';
+      body.map(part => {
+        fillRect(part.x * segment, part.y * segment, segmentGap, segmentGap);
+      });
+    }
+
+    paint() {
       this.headXY.x += this.move.x;
       this.headXY.y += this.move.y;
-
       this.headXY = this.ifWentAbroadScreen();
+
       this.length = this.ifCollisionYourself(this.headXY);
+      const newLength = this.ifAteFood(this.headXY);
+      this.isGrowUp = newLength > this.length;
+      this.length = newLength;
 
       this.body.push({ ...this.headXY });
       this.body = this.body.slice(-this.length);
-      painter.fillStyle = 'lime';
-      this.body.map(part => {
-        fillRect(part.x * segment, part.y * segment, segmentGap, segmentGap);
-      });
 
-      this.isGrowUp = false;
-      if (this.headXY.x === foodX && this.headXY.y === foodY) {
-        this.length++;
-        this.isGrowUp = true;
-      }
+      this.paintCore(this.body);
+    }
+
+    ifAteFood({ x, y }) {
+      const { x: foodX, y: foodY } = this.props.food.coords;
+      return x === foodX && y === foodY ? this.length + 1 : this.length;
     }
 
     ifCollisionYourself({ x, y }) {
@@ -129,24 +154,24 @@
       segmentGap: 18
     };
     speed = 1000 / 15;
-    painter = new Painter('gameField', this.field).canvasContext;
-    food = new Food({
-      segment: this.field.segment,
-      segmentGap: this.field.segmentGap,
-      painter: this.painter,
-      getRandomPlace: this.getRandomPlace.bind(this)
-    });
-    snake = new Snake({
-      painter: this.painter,
-      field: this.field,
-      food: this.food,
-      getRandomPlace: this.getRandomPlace.bind(this)
-    });
+    painter;
+    food;
+    snake;
 
-    constructor(gameFieldElement) {
-      const canvasElement = document.getElementById('gameField');
-
-      document.addEventListener('keydown', this.onKeydown);
+    constructor(targetElement) {
+      this.painter = new Painter(targetElement, this.field).canvasContext;
+      this.food = new Food({
+        segment: this.field.segment,
+        segmentGap: this.field.segmentGap,
+        painter: this.painter,
+        getRandomPlace: this.getRandomPlace.bind(this)
+      });
+      this.snake = new Snake({
+        painter: this.painter,
+        field: this.field,
+        food: this.food,
+        getRandomPlace: this.getRandomPlace.bind(this)
+      });
 
       setTimeout(this.timer);
     }
@@ -155,6 +180,7 @@
       const painter = this.painter;
       const { width, height } = this.field;
 
+      // clear all.
       painter.fillStyle = 'black';
       painter.fillRect(0, 0, width, height);
 
@@ -167,25 +193,6 @@
       setTimeout(this.timer, this.speed);
     };
 
-    onKeydown = ({ keyCode }) => {
-      const snake = this.snake;
-
-      switch (keyCode) {
-        case 37:
-          snake.move = { x: -1, y: 0 };
-          break;
-        case 38:
-          snake.move = { x: 0, y: -1 };
-          break;
-        case 39:
-          snake.move = { x: 1, y: 0 };
-          break;
-        case 40:
-          snake.move = { x: 0, y: 1 };
-          break;
-      }
-    };
-
     getRandomPlace() {
       const { segment } = this.field;
       return {
@@ -196,6 +203,6 @@
   }
 
   window.onload = () => {
-    new Game();
+    new Game('gameField');
   };
 })();
