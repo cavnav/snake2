@@ -154,6 +154,11 @@
       segmentGap: 18
     };
     speed = 1000 / 15;
+    score = 0;
+    scorePoints = 10;
+    record = 0;
+    scoreElement;
+    recordElement;
     painter;
     food;
     snake;
@@ -173,7 +178,16 @@
         getRandomPlace: this.getRandomPlace.bind(this)
       });
 
+      this.scoreElement = document.getElementsByClassName('score')[0];
+      this.recordElement = document.getElementsByClassName('record')[0];
+
+      this.changeScore();
       setTimeout(this.timer);
+    }
+
+    changeScore() {
+      this.scoreElement.textContent = this.score;
+      this.recordElement.textContent = this.record;
     }
 
     timer = () => {
@@ -188,6 +202,8 @@
       this.snake.paint();
       if (this.snake.isGrowUp) {
         this.food.paintNext();
+        this.score = this.addPoints(this.score);
+        this.changeScore();
       }
 
       setTimeout(this.timer, this.speed);
@@ -199,6 +215,10 @@
         x: Math.floor(Math.random() * segment),
         y: Math.floor(Math.random() * segment)
       };
+    }
+
+    addPoints(score) {
+      return score + this.scorePoints;
     }
   }
 
